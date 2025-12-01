@@ -39,10 +39,30 @@ public class Main {
         Scanner sc = new Scanner(System.in);
         String userName = sc.nextLine();
 
-        while (userNameLocate(list, userName) == -1) {
-            System.out.println("该用户名不存在，请重新输入：");
-            userName = sc.nextLine();
+        //先进行用户名格式判断再与数据库进行对比
+        while (true) {
+            loop:
+            while (true) {
+                int choose = userNameFormatCheck(userName);
+                switch (choose) {
+                    //case1 长度不在3-15范围内
+                    case 1, 2, 3 -> {
+                        System.out.println("用户名格式错误，请重新输入：");
+                        userName = sc.nextLine();
+                    }
+                    case 4 -> {
+                        break loop;
+                    }
+                }
+            }
+            if (userNameLocate(list, userName) == -1) {
+                System.out.println("该用户名不存在，请重新输入：");
+                userName = sc.nextLine();
+            } else {
+                break;
+            }
         }
+
         User user = list.get(userNameLocate(list, userName));
         //统计输入错误密码次数
         int tryTimes = 0;
@@ -51,7 +71,6 @@ public class Main {
         //String passWord = sc.nextLine()();
 
         //只要输入错误次数不为3就重复，输入错误验证码不增加输入错误次数
-        loop:
         while (tryTimes < 3) {
             System.out.println("请输入密码：");
             String passWord = sc.nextLine();
@@ -60,7 +79,7 @@ public class Main {
             String enteredCode = sc.nextLine();
 
             //输入错误验证码后重新生成新的验证码但保留原来输入的密码
-            while (!enteredCode.equals(code)) {
+            while (!enteredCode.equalsIgnoreCase(code)) {
                 code = generateCode();
                 System.out.println("验证码输入错误，请重新输入如下验证码：" + code);
                 enteredCode = sc.nextLine();
@@ -74,7 +93,7 @@ public class Main {
                 tryTimes++;
                 if (tryTimes == 3) {
                     System.out.println("已输入错误密码3次，请重新登录");
-                    break loop;
+                    break;
                 }
                 //先提示剩余次数随后退回至输入密码处，需要再重新输入密码和验证验证码
                 System.out.println("输入密码有误，请重新输入，还剩" + (3 - tryTimes) + "次机会");
@@ -92,45 +111,37 @@ public class Main {
         Scanner sc = new Scanner(System.in);
         String userName = sc.nextLine();
 
-        while (userNameLocate(list, userName) != -1) {
-            System.out.println("该用户名已存在，请重新输入：");
-            userName = sc.nextLine();
-        }
-        //根据不同错误类型打印提示并在重新输入后回到循环，每个case重新输入后都优先单独检查重复性避免在输入正确格式但是是重复用户名时没能检查出来
-        loop:
+        //根据不同错误类型打印提示并在重新输入后回到循环，先检测用户名格式是否正确，全部case通过后再检查是否重复，若重复则重新输入后再次循环检查格式
         while (true) {
-            int choose = userNameFormatCheck(userName);
-            switch (choose) {
-                //case1 长度不在3-15范围内
-                case 1 -> {
-                    System.out.println("用户名长度需在3-15个数字和字母字符之间，请重新输入：");
-                    userName = sc.nextLine();
-                    if (userNameLocate(list, userName) != -1) {
-                        System.out.println("该用户名已存在，请重新输入：");
-                        continue;  // 再次进入 loop，重新检查格式
+            loop:
+            while (true) {
+                int choose = userNameFormatCheck(userName);
+                switch (choose) {
+                    //case1 长度不在3-15范围内
+                    case 1 -> {
+                        System.out.println("用户名长度需在3-15个数字和字母字符之间，请重新输入：");
+                        userName = sc.nextLine();
+                    }
+                    //case2 包含除数字字母以外字符
+                    case 2 -> {
+                        System.out.println("用户名不能由数字和字母以外的字符组成，请重新输入：");
+                        userName = sc.nextLine();
+                    }
+                    //case3 字母个数为0
+                    case 3 -> {
+                        System.out.println("用户名不能由纯数字组成，请重新输入：");
+                        userName = sc.nextLine();
+                    }
+                    case 4 -> {
+                        break loop;
                     }
                 }
-                //case2 包含除数字字母以外字符
-                case 2 -> {
-                    System.out.println("用户名不能由数字和字母以外的字符组成，请重新输入：");
-                    userName = sc.nextLine();
-                    if (userNameLocate(list, userName) != -1) {
-                        System.out.println("该用户名已存在，请重新输入：");
-                        continue;  // 再次进入 loop，重新检查格式
-                    }
-                }
-                //case3 字母个数为0
-                case 3 -> {
-                    System.out.println("用户名不能由纯数字组成，请重新输入：");
-                    userName = sc.nextLine();
-                    if (userNameLocate(list, userName) != -1) {
-                        System.out.println("该用户名已存在，请重新输入：");
-                        continue;  // 再次进入 loop，重新检查格式
-                    }
-                }
-                case 4 -> {
-                    break loop;
-                }
+            }
+            if (userNameLocate(list, userName) != -1) {
+                System.out.println("该用户名已存在，请重新输入：");
+                userName = sc.nextLine();
+            } else {
+                break;
             }
         }
 
@@ -140,10 +151,9 @@ public class Main {
         String userPassWord2 = sc.nextLine();
 
         //输入两次密码后开始对比
-        loop2:
         while (true) {
             if (userPassWord1.equals(userPassWord2)) {
-                break loop2;
+                break;
             } else {
                 System.out.println("两次密码不一致，请重新输入");
                 System.out.println("请输入密码：");
@@ -157,7 +167,7 @@ public class Main {
         String userId = sc.nextLine();
 
         //根据不同错误类型打印提示并在重新输入后回到循环
-        loop3:
+        loop2:
         while (true) {
             int choose = userIdFormatCheck(userId);
             switch (choose) {
@@ -177,7 +187,7 @@ public class Main {
                     userId = sc.nextLine();
                 }
                 case 4 -> {
-                    break loop3;
+                    break loop2;
                 }
             }
         }
@@ -186,7 +196,7 @@ public class Main {
         String userPhNumber = sc.nextLine();
 
         //根据不同错误类型打印提示并在重新输入后回到循环
-        loop4:
+        loop3:
         while (true) {
             int choose = userPhoneNumberFormatCheck(userPhNumber);
             switch (choose) {
@@ -206,7 +216,7 @@ public class Main {
                     userPhNumber = sc.nextLine();
                 }
                 case 4 -> {
-                    break loop4;
+                    break loop3;
                 }
             }
         }
@@ -229,29 +239,90 @@ public class Main {
         Scanner sc = new Scanner(System.in);
         String userName = sc.nextLine();
 
-        while (userNameLocate(list, userName) == -1) {
-            System.out.println("该用户名不存在，请重新输入：");
-            userName = sc.nextLine();
+        //先进行用户名格式判断再与数据库进行对比
+        while (true) {
+            loop:
+            while (true) {
+                int choose = userNameFormatCheck(userName);
+                switch (choose) {
+                    //case1 长度不在3-15范围内
+                    case 1, 2, 3 -> {
+                        System.out.println("用户名格式错误，请重新输入：");
+                        userName = sc.nextLine();
+                    }
+                    case 4 -> {
+                        break loop;
+                    }
+                }
+            }
+            if (userNameLocate(list, userName) == -1) {
+                System.out.println("该用户名不存在，请重新输入：");
+                userName = sc.nextLine();
+            } else {
+                break;
+            }
         }
+
         User user = list.get(userNameLocate(list, userName));
         String id = user.getUserId();
         String phoneNumber = user.getUserPhoneNumber();
 
         System.out.println("请输入身份证号：");
         String enteredId = sc.nextLine();
+        //先进行身份证号码格式判断再进行下一步
+        loop:
+        while (true) {
+            int choose = userIdFormatCheck(enteredId);
+            switch (choose) {
+                //case1 长度不为18位
+                case 1, 2, 3 -> {
+                    System.out.println("身份证号码格式错误请重新输入：");
+                    enteredId = sc.nextLine();
+                }
+                case 4 -> {
+                    break loop;
+                }
+            }
+        }
+        //先进行手机号格式判断再进行下一步
         System.out.println("请输入手机号：");
         String enteredPhoneNumber = sc.nextLine();
+        loop3:
+        while (true) {
+            int choose = userPhoneNumberFormatCheck(enteredPhoneNumber);
+            switch (choose) {
+                //case1 长度不为11位
+                case 1, 2, 3 -> {
+                    System.out.println("手机号格式错误，请重新输入：");
+                    enteredPhoneNumber = sc.nextLine();
+                }
+                case 4 -> {
+                    break loop3;
+                }
+            }
+        }
 
-        if (id.equals(enteredId) && phoneNumber.equals(enteredPhoneNumber)) {
+        if (id.equalsIgnoreCase(enteredId) && phoneNumber.equals(enteredPhoneNumber)) {
             System.out.println("验证成功，请输入新的密码：");
-            String newPassWord = sc.nextLine();
-            user.setUserPassword(newPassWord);
+            String newPassWord1 = sc.nextLine();
+            System.out.println("请再次输入新的密码：");
+            String newPassWord2 = sc.nextLine();
+            while (true) {
+                if (newPassWord1.equals(newPassWord2)) {
+                    break;
+                } else {
+                    System.out.println("两次密码不一致，请重新输入");
+                    System.out.println("请输入密码：");
+                    newPassWord1 = sc.nextLine();
+                    System.out.println("请再次输入密码：");
+                    newPassWord2 = sc.nextLine();
+                }
+            }
+            user.setUserPassword(newPassWord1);
             //System.out.println("密码修改成功");
-            System.out.println("密码修改成功：" + "\t" + "用户名：" + userName + "\t" + "账号密码：" + newPassWord + "\t" + "身份证号：" + id + "\t" + "手机号：" + phoneNumber);
-            return;
+            System.out.println("密码修改成功：" + "\t" + "用户名：" + userName + "\t" + "账号密码：" + newPassWord1 + "\t" + "身份证号：" + id + "\t" + "手机号：" + phoneNumber);
         } else {
             System.out.println("验证失败，无法修改密码");
-            return;
         }
     }
 
